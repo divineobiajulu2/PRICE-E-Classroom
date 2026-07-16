@@ -1,0 +1,26 @@
+﻿# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+frontend/test-results/
+frontend/playwright-report/
+
+# Backend
+work/backend/.venv/
+work/backend/__pycache__/
+**/__pycache__/
+work/backend/db.sqlite3
+work/backend/media/
+work/backend/staticfiles/
+work/backend/tags
+work/backend/desktop.ini
+work/backend/.env
+
+# Logs
+work/*.log
+
+# General
+*.pyc
+.DS_Store
+Thumbs.db
