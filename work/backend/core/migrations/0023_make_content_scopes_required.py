@@ -30,18 +30,5 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(default=1, limit_choices_to={'role__in': ['teacher', 'instructor']}, on_delete=django.db.models.deletion.PROTECT, related_name='classroom_materials', to=settings.AUTH_USER_MODEL),
             preserve_default=False,
         ),
-        migrations.CreateModel(
-            name='CourseInstructor',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('assigned_at', models.DateTimeField(auto_now_add=True)),
-                ('assigned_by', models.ForeignKey(blank=True, limit_choices_to={'role': 'admin'}, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='assigned_course_instructors', to=settings.AUTH_USER_MODEL)),
-                ('course', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='course_instructors', to='core.course')),
-                ('instructor', models.ForeignKey(limit_choices_to={'role__in': ['teacher', 'instructor']}, on_delete=django.db.models.deletion.CASCADE, related_name='assigned_courses', to=settings.AUTH_USER_MODEL)),
-            ],
-            options={
-                'ordering': ['-assigned_at'],
-                'unique_together': {('course', 'instructor')},
-            },
-        ),
+        
     ]

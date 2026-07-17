@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
             name='status',
             field=models.CharField(choices=[('draft', 'Draft'), ('published', 'Published')], default='draft', max_length=20),
         ),
-        migrations.AlterField(
+        migrations.AddField(
             model_name='assignment',
             name='course',
             field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='assignments', to='core.course'),
@@ -37,7 +37,7 @@ class Migration(migrations.Migration):
             name='instructor',
             field=models.ForeignKey(limit_choices_to={'role__in': ['teacher', 'instructor']}, on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
         ),
-        migrations.AlterField(
+        migrations.AddField(
             model_name='classroommaterial',
             name='course',
             field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='classroom_materials', to='core.course'),
