@@ -105,9 +105,7 @@ const MyCourses: React.FC = () => {
                       <p className="text-gray-700">
                         <span className="font-medium">Instructor:</span> {course.instructor_username}
                       </p>
-                      <p className="text-gray-700">
-                        <span className="font-medium">Level:</span> {course.level}
-                      </p>
+                      
                       {course.total_lessons && (
                         <p className="text-gray-700">
                           <span className="font-medium">Lessons:</span> {course.total_lessons}

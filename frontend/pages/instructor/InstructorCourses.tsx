@@ -154,7 +154,7 @@ const InstructorCourses: React.FC = () => {
                     </div>
                     <p className="text-sm text-gray-600 mb-3 line-clamp-2">{course.description}</p>
                     <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
-                      <span>Level: <strong>{course.level}</strong></span>
+                      
                       {course.set_number !== undefined && (
                         <span>Set: <strong>{course.set_number}</strong></span>
                       )}

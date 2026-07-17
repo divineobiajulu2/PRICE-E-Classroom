@@ -57,12 +57,8 @@ const CourseDetail: React.FC = () => {
               <h1 className="text-3xl font-bold text-slate-900">{course.title}</h1>
               <p className="mt-2 text-slate-500">{course.description}</p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-2xl bg-slate-50 p-4 text-center">
-                <BookOpen className="mx-auto mb-2 text-primary" />
-                <p className="text-sm text-slate-500">Level</p>
-                <p className="text-xl font-semibold text-slate-900">{course.level}</p>
-              </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              
               <div className="rounded-2xl bg-slate-50 p-4 text-center">
                 <Clock className="mx-auto mb-2 text-primary" />
                 <p className="text-sm text-slate-500">Streams</p>

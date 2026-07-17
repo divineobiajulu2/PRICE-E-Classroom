@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Linkedin, Upload, Eye, EyeOff, CheckCircle, AlertCircle, Home, Clock } from 'lucide-react';
 import { authService } from '../../services/api';
@@ -27,6 +27,18 @@ type SignupFormData = {
 
 const InternSignup: React.FC = () => {
   const [step, setStep] = useState<number>(1);
+
+useEffect(() => {
+  window.history.pushState({ step }, '');
+}, [step]);
+
+useEffect(() => {
+  const handlePopState = () => {
+    setStep((prev) => Math.max(prev - 1, 1));
+  };
+  window.addEventListener('popstate', handlePopState);
+  return () => window.removeEventListener('popstate', handlePopState);
+}, []);
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [globalError, setGlobalError] = useState<string>('');

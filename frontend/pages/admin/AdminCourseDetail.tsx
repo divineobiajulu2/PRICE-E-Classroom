@@ -76,7 +76,6 @@ const AdminCourseDetail: React.FC = () => {
           <h1 className="text-3xl font-bold text-slate-900">{course.title}</h1>
           <p className="mt-2 text-slate-500">{course.description}</p>
           <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-500">
-            <span>Level: <strong>{course.level}</strong></span>
             <span>Set: <strong>{course.set_number}</strong></span>
             <span>Streams: <strong>{(course.streams || []).join(', ') || 'General'}</strong></span>
           </div>

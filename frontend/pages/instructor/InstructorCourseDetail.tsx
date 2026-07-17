@@ -157,7 +157,7 @@ const InstructorCourseDetail: React.FC = () => {
           <h1 className="text-3xl font-bold text-slate-900">{course.title}</h1>
           <p className="mt-2 text-slate-500">{course.description}</p>
           <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-500">
-            <span>Level: <strong>{course.level}</strong></span>
+            
             <span>Set: <strong>{course.set_number}</strong></span>
             <span>Streams: <strong>{(course.streams || []).join(', ') || 'General'}</strong></span>
           </div>
@@ -256,9 +256,9 @@ const InstructorCourseDetail: React.FC = () => {
             <div className="grid gap-3">
               {assignments.map((a) => (
                 <div key={a.id} className="rounded-2xl border border-slate-200 p-4">
-                  <div className="flex justify-between items-start gap-4">
-                    <p className="font-semibold text-slate-900">{a.title}</p>
-                    <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap justify-between items-start gap-2">
+                  <p className="font-semibold text-slate-900">{a.title}</p>
+                   <div className="flex flex-wrap items-center gap-2">
                       <span className="text-xs text-slate-400">
                         Due {a.due_date ? new Date(a.due_date).toLocaleDateString() : 'TBD'}
                       </span>

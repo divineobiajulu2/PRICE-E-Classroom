@@ -789,7 +789,8 @@ export const messagingService = {
 
 export const websocketService = {
   connect: (groupId: string, userId: string, onMessage: (message: Message) => void): WebSocket => {
-    const wsUrl = `ws://${new URL(API_BASE_URL).host}/api/messages/ws/${groupId}/${userId}`;
+    const wsProtocol = new URL(API_BASE_URL).protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${wsProtocol}//${new URL(API_BASE_URL).host}/api/messages/ws/${groupId}/${userId}`;
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
