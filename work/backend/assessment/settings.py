@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core',
+    'channels',
     'rest_framework',
     'assessments',
 ]
@@ -108,6 +109,13 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'assessment.wsgi.application'
+ASGI_APPLICATION = 'assessment.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 # JWT settings 
 SIMPLE_JWT = {
