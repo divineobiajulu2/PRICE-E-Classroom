@@ -1,11 +1,12 @@
+from django.conf import settings
 from django.db import migrations, models
-import django.conf.global_settings
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
         ('core', '0017_course_material_attachment_course_set_number'),
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
@@ -18,7 +19,7 @@ class Migration(migrations.Migration):
                 on_delete=models.SET_NULL,
                 related_name='created_courses',
                 limit_choices_to={'role': 'admin'},
-                to='auth.user',
+                to=settings.AUTH_USER_MODEL,
             ),
         ),
     ]
