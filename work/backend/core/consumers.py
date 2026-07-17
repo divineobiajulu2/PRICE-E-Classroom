@@ -1,4 +1,3 @@
-@'
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 
@@ -8,7 +7,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.group_id = self.scope['url_route']['kwargs']['group_id']
         self.user_id = self.scope['url_route']['kwargs']['user_id']
         self.room_group_name = f'chat_{self.group_id}'
-
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
 
@@ -19,12 +17,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         await self.channel_layer.group_send(
             self.room_group_name,
-            {
-                'type': 'chat_message',
-                'message': data,
-            }
+            {'type': 'chat_message', 'message': data}
         )
 
     async def chat_message(self, event):
         await self.send(text_data=json.dumps(event['message']))
-'@ | Set-Content -Path core\consumers.py -Encoding UTF8
