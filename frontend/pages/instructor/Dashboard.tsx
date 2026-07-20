@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Clock, Paperclip } from 'lucide-react';
+import { Clock, Paperclip, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { notificationService, adminService } from '../../services/api';
+import { authService, notificationService, adminService } from '../../services/api';
 import FullPageSkeleton from '../../components/ui/FullPageSkeleton';
 
 const InstructorDashboard: React.FC = () => {
@@ -16,6 +16,9 @@ const InstructorDashboard: React.FC = () => {
   const [courses, setCourses] = useState<any[]>([]);
   const [coursesLoading, setCoursesLoading] = useState(true);
   const [selectedCourseId, setSelectedCourseId] = useState<string>('');
+
+  const user = authService.getCurrentUser();
+  const safeUser: any = user || {};
 
   useEffect(() => {
     let mounted = true;
@@ -96,8 +99,26 @@ const InstructorDashboard: React.FC = () => {
 
   return (
     <div className="p-6 md:p-8 max-w-6xl mx-auto">
+      {/* Welcome banner - matches intern dashboard style */}
+      <div className="mb-6 bg-gradient-to-r from-navy to-primary rounded-2xl p-6 text-white shadow-lg">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide">Welcome back</p>
+            <h1 className="text-3xl font-bold mt-1">
+              {[safeUser.firstName, safeUser.lastName].filter(Boolean).join(' ') || safeUser.username || 'Instructor'}
+            </h1>
+            <p className="text-sm opacity-90 mt-2">Instructor Dashboard</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <Link to="/instructor/courses" className="bg-white text-primary px-4 py-2 rounded-lg font-bold">
+              My Courses
+            </Link>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white dark:bg-navy rounded-xl p-4 flex items-center gap-4 border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex items-center gap-4">
           <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
             <Clock size={22} />
           </div>
@@ -107,7 +128,7 @@ const InstructorDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-navy rounded-xl p-4 flex items-center gap-4 border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex items-center gap-4">
           <div className="w-12 h-12 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 11c1.657 0 3-1.343 3-3S17.657 5 16 5s-3 1.343-3 3 1.343 3 3 3zM8 21v-2a4 4 0 014-4h0a4 4 0 014 4v2" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </div>
@@ -117,7 +138,7 @@ const InstructorDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-navy rounded-xl p-4 flex items-center gap-4 border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex items-center gap-4">
           <div className="w-12 h-12 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
             <Clock size={22} />
           </div>
@@ -127,7 +148,7 @@ const InstructorDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-navy rounded-xl p-4 flex items-center gap-4 border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex items-center gap-4">
           <div className="w-12 h-12 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
             <Clock size={22} />
           </div>
@@ -138,18 +159,13 @@ const InstructorDashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h3 className="text-lg font-semibold">Quick Actions</h3>
-          <p className="text-sm text-slate-500">Post classroom materials or create a new assessment</p>
+      <section className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-bold">Classroom Feed</h3>
+          <Link to="/instructor/courses" className="text-sm text-primary font-semibold hover:underline inline-flex items-center gap-1">
+            View Courses <ArrowRight size={14} />
+          </Link>
         </div>
-        <div className="flex gap-3">
-          <Link to="/instructor/courses" className="px-4 py-2 bg-primary text-white rounded-lg font-semibold">Go to My Courses</Link>
-        </div>
-      </div>
-
-      <section className="bg-white dark:bg-navy border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm">
-        <h3 className="text-xl font-bold mb-4">Classroom Feed</h3>
         <form onSubmit={handlePostMaterial} className="space-y-3 mb-4">
           <input
             value={title}
@@ -178,7 +194,7 @@ const InstructorDashboard: React.FC = () => {
               </span>
             )}
           </label>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <select
               value={selectedCourseId}
               onChange={(e) => setSelectedCourseId(e.target.value)}
@@ -210,12 +226,12 @@ const InstructorDashboard: React.FC = () => {
         ) : (
           <div className="space-y-3">
             {materials.map((item: any) => (
-              <div key={item.id} className="rounded-lg border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3">
+              <div key={item.id} className="rounded-lg border border-slate-100 bg-slate-50 p-3">
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-semibold">{item.title}</p>
                   <span className="text-xs uppercase tracking-wide text-slate-500">{item.study_stream}</span>
                 </div>
-                <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">{item.description || 'No description provided.'}</p>
+                <p className="text-sm text-slate-600 mt-1">{item.description || 'No description provided.'}</p>
                 <p className="text-xs text-slate-400 mt-2">Posted {new Date(item.created_at).toLocaleDateString()}</p>
               </div>
             ))}
