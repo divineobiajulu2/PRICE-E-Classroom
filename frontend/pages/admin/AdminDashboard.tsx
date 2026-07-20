@@ -250,12 +250,19 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <>
-    <div className="p-8 max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-navy mb-1">User Management</h1>
-          <p className="text-slate-500">Manage instructors, interns, and platform approvals.</p>
+    <div className="p-6 md:p-8 max-w-7xl mx-auto">
+      <div className="mb-6 bg-gradient-to-r from-navy to-primary rounded-2xl p-6 text-white shadow-lg">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide">Welcome back</p>
+            <h1 className="text-3xl font-bold mt-1">Admin Dashboard</h1>
+            <p className="text-sm opacity-90 mt-2">Manage instructors, interns, and platform approvals.</p>
+          </div>
         </div>
+      </div>
+
+      <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
+        <div></div>
         <div className="flex gap-3 w-full md:w-auto">
           <div className="relative flex-1 md:w-64">
              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
