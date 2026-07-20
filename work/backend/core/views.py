@@ -182,6 +182,16 @@ def register_staff(request):
             "field": "ph_code"
         }, status=400)
 
+    #User name check
+
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    if User.objects.filter(username=data["ph_code"]).exists():
+        return JsonResponse({
+            "error": "An account with this PH code already exists. Please contact admin if you believe this is an error.",
+            "field": "ph_code"
+        }, status=400)
+
     # Create user
     user, error = create_base_user(
         username=data["ph_code"],
