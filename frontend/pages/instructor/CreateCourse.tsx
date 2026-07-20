@@ -235,7 +235,7 @@ const CreateCourse: React.FC = () => {
                   <p className="p-4 text-sm text-gray-500">No instructors available yet.</p>
                 ) : (
                   instructorOptions.map((instructor) => {
-                    const checked = selectedInstructorIds.includes(instructor.id);
+                    const checked = selectedInstructorIds.includes(Number(instructor.id));
                     return (
                       <label
                         key={instructor.id}
@@ -247,8 +247,8 @@ const CreateCourse: React.FC = () => {
                           onChange={() => {
                             setSelectedInstructorIds((prev) =>
                               checked
-                                ? prev.filter((id) => id !== instructor.id)
-                                : [...prev, instructor.id]
+                                ? prev.filter((id) => id !== Number(instructor.id))
+                                : [...prev, Number(instructor.id)]
                             );
                           }}
                           className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"

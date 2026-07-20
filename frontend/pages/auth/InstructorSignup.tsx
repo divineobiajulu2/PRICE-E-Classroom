@@ -37,7 +37,9 @@ useEffect(() => {
     email: '',
     password: '',
     confirmPassword: '',
-    consent: false
+    consent: false,
+    profilePhoto: null as File | null,
+    profilePhotoPreviewUrl: '',
   });
 
   const [errors, setErrors] = useState<Record<string, boolean>>({});
@@ -58,6 +60,24 @@ useEffect(() => {
     if (globalError) setGlobalError('');
   };
 
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    if (!file) {
+      setFormData(prev => ({ ...prev, profilePhoto: null, profilePhotoPreviewUrl: '' }));
+      return;
+    }
+    if (file.size > 1048576) {
+      setFormData(prev => ({ ...prev, profilePhoto: null, profilePhotoPreviewUrl: '' }));
+      e.target.value = '';
+      setGlobalError('Image must be 1MB or less.');
+      return;
+    }
+    const previewUrl = URL.createObjectURL(file);
+    setFormData(prev => ({ ...prev, profilePhoto: file, profilePhotoPreviewUrl: previewUrl }));
+    if (globalError) setGlobalError('');
+  };
+
+  
   const countryOptions = [
     { value: 'NG', label: 'Nigeria' },
     { value: 'GH', label: 'Ghana' },
@@ -275,10 +295,29 @@ useEffect(() => {
 
                     <div>
                       <label className="block text-sm font-semibold text-slate-700 mb-2">Profile Picture</label>
-                      <div className="relative cursor-pointer hover:bg-slate-50 transition-colors border border-dashed border-slate-300 rounded-lg p-4 flex flex-col items-center justify-center text-center bg-white">
-                        <Upload className="text-[#0d59f2] mb-2" size={24} />
-                        <span className="text-sm text-slate-500">Click to upload passport</span>
-                        <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" />
+                      
+                      <div className="space-y-3">
+                        <div className="relative border border-dashed border-slate-300 rounded-lg p-4 bg-white hover:border-primary transition-colors">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handlePhotoChange}
+                            className="absolute inset-0 opacity-0 cursor-pointer"
+                          />
+                          <div className="flex flex-col items-center justify-center py-8">
+                            <Upload className="text-[#0d59f2] mb-2" size={24} />
+                            <span className="text-sm text-slate-500">Choose an image under 1MB</span>
+                          </div>
+                        </div>
+                        {formData.profilePhotoPreviewUrl && (
+                         <div className="flex items-center gap-3 border border-slate-200 rounded-lg p-3 bg-slate-50">
+                            <img src={formData.profilePhotoPreviewUrl} alt="Preview" className="w-20 h-20 rounded-lg object-cover" />
+                            <div>
+                              <p className="font-semibold text-slate-700">Selected image</p>
+                              <p className="text-sm text-slate-500">{formData.profilePhoto?.name}</p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -412,6 +451,16 @@ useEffect(() => {
                   ))}
                 </div>
 
+                <div className="flex flex-wrap gap-3 w-full md:w-auto justify-end">
+                {step > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setStep(prev => Math.max(prev - 1, 1))}
+                    className="px-6 py-3 rounded-full border border-slate-200 text-slate-700 hover:bg-slate-50"
+                  >
+                    Back
+                  </button>
+                )}
                 {step < 4 ? (
                   <button 
                     type="button" 
@@ -429,6 +478,7 @@ useEffect(() => {
                     {isSubmitting ? 'Processing...' : 'Submit'}
                   </button>
                 )}
+                </div>
               </div>
 
             </form>
