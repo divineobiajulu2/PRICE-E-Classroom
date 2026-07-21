@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { BookOpen, Users, Clock, ArrowRight } from 'lucide-react';
+import { BookOpen, Users, Clock, ArrowRight, Video } from 'lucide-react';
 import { adminService } from '../../services/api';
 
 interface InstructorAssignment {
@@ -25,6 +25,7 @@ const CourseDetail: React.FC = () => {
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [liveSessions, setLiveSessions] = useState<any[]>([]);
 
   useEffect(() => {
     if (!courseId) return;
@@ -34,8 +35,13 @@ const CourseDetail: React.FC = () => {
   const loadCourse = async () => {
     try {
       setLoading(true);
-      const data = await adminService.getCourse(courseId!);
+      const [data, sessionsRes] = await Promise.all([
+        adminService.getCourse(courseId!),
+        adminService.getLiveSessions().catch(() => ({ sessions: [] })),
+      ]);
       setCourse(data);
+      const all = sessionsRes?.sessions || [];
+      setLiveSessions(all.filter((s: any) => String(s.course_id) === String(courseId)));
     } catch (err: any) {
       console.error('[CourseDetail] Failed to load course:', err);
       setError(err?.message || 'Failed to load course.');
@@ -71,6 +77,34 @@ const CourseDetail: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="rounded-3xl bg-white border border-slate-200 p-8 shadow-sm">
+          <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2 mb-4">
+            <Video size={20} className="text-primary" /> Live Sessions
+          </h2>
+          {liveSessions.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-slate-500">
+              No live sessions scheduled for this course yet.
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {liveSessions.map((s) => (
+                <div key={s.id} className="rounded-2xl border border-slate-200 p-4 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-slate-900">{s.topic}</p>
+                    <p className="text-sm text-slate-500 mt-1">{s.scheduled_date} at {s.scheduled_time} · {s.instructor_name}</p>
+                  </div>
+                  <Link
+                    to={`/live-session/${s.id}`}
+                    className="text-sm font-semibold text-white bg-navy hover:bg-primary px-4 py-2 rounded-lg"
+                  >
+                    Join Session
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="rounded-3xl bg-white border border-slate-200 p-8 shadow-sm">

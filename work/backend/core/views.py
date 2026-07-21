@@ -922,7 +922,15 @@ def instructor_dashboard(request):
 
     courses_qs = Course.objects.filter(Q(instructor=request.user) | Q(course_instructors__instructor=request.user)).distinct()
     total_courses = courses_qs.count()
-    total_students = sum([c.student_count or 0 for c in courses_qs])
+
+    student_ids = set()
+    for c in courses_qs:
+        matched = StudentProfile.objects.filter(
+            study_stream__in=(c.streams or []),
+            set_number=c.set_number,
+        ).values_list('user_id', flat=True)
+        student_ids.update(matched)
+    total_students = len(student_ids)
 
     # Submissions to assignments owned by this instructor
     subs_qs = Submission.objects.filter(assignment__instructor=request.user, is_draft=False).order_by('-submitted_at')

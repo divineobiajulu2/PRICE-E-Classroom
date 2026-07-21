@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { BookOpen, FileText, Plus, ArrowLeft, Award, X } from 'lucide-react';
+import { BookOpen, FileText, Plus, ArrowLeft, Award, X, Video, Trash2 } from 'lucide-react';
 import { adminService, authService, notificationService } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 
@@ -43,6 +43,14 @@ interface GradeItem {
   feedback?: string;
 }
 
+interface LiveSessionItem {
+  id: number;
+  topic: string;
+  scheduled_date: string;
+  scheduled_time: string;
+  status: string;
+}
+
 const InstructorCourseDetail: React.FC = () => {
   const { id: courseId } = useParams<{ id: string }>();
   const [course, setCourse] = useState<Course | null>(null);
@@ -60,6 +68,88 @@ const InstructorCourseDetail: React.FC = () => {
   const currentUser = authService.getCurrentUser();
   const [deletingMaterialId, setDeletingMaterialId] = useState<number | null>(null);
   const [deletingAssignmentId, setDeletingAssignmentId] = useState<number | null>(null);
+
+  const [liveSessions, setLiveSessions] = useState<LiveSessionItem[]>([]);
+  const [showSessionModal, setShowSessionModal] = useState(false);
+  const [sessionTopic, setSessionTopic] = useState('');
+  const [sessionDate, setSessionDate] = useState('');
+  const [sessionTime, setSessionTime] = useState('');
+  const [creatingSession, setCreatingSession] = useState(false);
+  const [deletingSessionId, setDeletingSessionId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!courseId) return;
+    loadCourse();
+    loadLiveSessions();
+  }, [courseId]);
+
+  const loadCourse = async () => {
+    try {
+      setLoading(true);
+      const [courseData, gradesData] = await Promise.all([
+        adminService.getCourse(courseId!),
+        adminService.getCourseGrades(courseId!).catch(() => []),
+      ]);
+      setCourse(courseData);
+      setGrades(Array.isArray(gradesData) ? gradesData : []);
+    } catch (err: any) {
+      console.error('[InstructorCourseDetail] Failed to load course:', err);
+      setError(err?.message || 'Failed to load course.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadLiveSessions = async () => {
+    try {
+      const res = await adminService.getLiveSessions();
+      const all = res?.sessions || [];
+      setLiveSessions(all.filter((s: any) => String(s.course_id) === String(courseId)));
+    } catch (err) {
+      console.error('[InstructorCourseDetail] Failed to load live sessions:', err);
+    }
+  };
+
+  const handleCreateSession = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!sessionTopic.trim() || !sessionDate || !sessionTime || !courseId) {
+      showToast('Please fill in all session fields', 'error');
+      return;
+    }
+    try {
+      setCreatingSession(true);
+      await adminService.createLiveSession({
+        course: courseId,
+        topic: sessionTopic.trim(),
+        date: sessionDate,
+        time: sessionTime,
+      });
+      showToast('Live session scheduled', 'success');
+      setSessionTopic('');
+      setSessionDate('');
+      setSessionTime('');
+      setShowSessionModal(false);
+      await loadLiveSessions();
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to schedule session', 'error');
+    } finally {
+      setCreatingSession(false);
+    }
+  };
+
+  const handleDeleteSession = async (sessionId: number) => {
+    if (!window.confirm('Cancel this live session?')) return;
+    try {
+      setDeletingSessionId(sessionId);
+      await adminService.deleteLiveSession(sessionId);
+      showToast('Session cancelled', 'success');
+      await loadLiveSessions();
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to cancel session', 'error');
+    } finally {
+      setDeletingSessionId(null);
+    }
+  };
 
   const handleDeleteMaterial = async (materialId: number) => {
     if (!window.confirm('Delete this material? This cannot be undone.')) return;
@@ -86,28 +176,6 @@ const InstructorCourseDetail: React.FC = () => {
       showToast(err?.message || 'Failed to delete assignment.', 'error');
     } finally {
       setDeletingAssignmentId(null);
-    }
-  };
-
-  useEffect(() => {
-    if (!courseId) return;
-    loadCourse();
-  }, [courseId]);
-
-  const loadCourse = async () => {
-    try {
-      setLoading(true);
-      const [courseData, gradesData] = await Promise.all([
-        adminService.getCourse(courseId!),
-        adminService.getCourseGrades(courseId!).catch(() => []),
-      ]);
-      setCourse(courseData);
-      setGrades(Array.isArray(gradesData) ? gradesData : []);
-    } catch (err: any) {
-      console.error('[InstructorCourseDetail] Failed to load course:', err);
-      setError(err?.message || 'Failed to load course.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -157,10 +225,55 @@ const InstructorCourseDetail: React.FC = () => {
           <h1 className="text-3xl font-bold text-slate-900">{course.title}</h1>
           <p className="mt-2 text-slate-500">{course.description}</p>
           <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-500">
-            
             <span>Set: <strong>{course.set_number}</strong></span>
             <span>Streams: <strong>{(course.streams || []).join(', ') || 'General'}</strong></span>
           </div>
+        </div>
+
+        <div className="rounded-3xl bg-white border border-slate-200 p-8 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
+              <Video size={20} className="text-primary" /> Live Sessions
+            </h2>
+            <button
+              onClick={() => setShowSessionModal(true)}
+              className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700"
+            >
+              <Plus size={16} /> Schedule Session
+            </button>
+          </div>
+
+          {liveSessions.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-slate-500">
+              No live sessions scheduled for this course yet.
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {liveSessions.map((s) => (
+                <div key={s.id} className="rounded-2xl border border-slate-200 p-4 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-slate-900">{s.topic}</p>
+                    <p className="text-sm text-slate-500 mt-1">{s.scheduled_date} at {s.scheduled_time}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      to={`/live-session/${s.id}`}
+                      className="text-xs font-semibold text-white bg-navy hover:bg-primary px-3 py-1.5 rounded"
+                    >
+                      Enter
+                    </Link>
+                    <button
+                      onClick={() => handleDeleteSession(s.id)}
+                      disabled={deletingSessionId === s.id}
+                      className="text-xs font-semibold text-red-600 hover:bg-red-50 px-2 py-1.5 rounded disabled:opacity-50"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="rounded-3xl bg-white border border-slate-200 p-8 shadow-sm">
@@ -257,8 +370,8 @@ const InstructorCourseDetail: React.FC = () => {
               {assignments.map((a) => (
                 <div key={a.id} className="rounded-2xl border border-slate-200 p-4">
                   <div className="flex flex-wrap justify-between items-start gap-2">
-                  <p className="font-semibold text-slate-900">{a.title}</p>
-                   <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-semibold text-slate-900">{a.title}</p>
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="text-xs text-slate-400">
                         Due {a.due_date ? new Date(a.due_date).toLocaleDateString() : 'TBD'}
                       </span>
@@ -301,6 +414,58 @@ const InstructorCourseDetail: React.FC = () => {
           )}
         </div>
       </div>
+
+      {showSessionModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
+            <div className="bg-navy p-6 flex justify-between items-center text-white">
+              <h3 className="text-xl font-bold flex items-center gap-2"><Video size={20} /> Schedule Live Session</h3>
+              <button onClick={() => setShowSessionModal(false)} className="text-white/70 hover:text-white"><X size={20} /></button>
+            </div>
+            <form onSubmit={handleCreateSession} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-navy mb-1">Session Topic</label>
+                <input
+                  type="text"
+                  className="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-primary/20 outline-none"
+                  required
+                  value={sessionTopic}
+                  onChange={(e) => setSessionTopic(e.target.value)}
+                  placeholder="e.g. Week 5 Live Review"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-bold text-navy mb-1">Date</label>
+                  <input
+                    type="date"
+                    className="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-primary/20 outline-none"
+                    required
+                    value={sessionDate}
+                    onChange={(e) => setSessionDate(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-navy mb-1">Time</label>
+                  <input
+                    type="time"
+                    className="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-primary/20 outline-none"
+                    required
+                    value={sessionTime}
+                    onChange={(e) => setSessionTime(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="pt-4 flex gap-3">
+                <button type="button" onClick={() => setShowSessionModal(false)} className="flex-1 py-3 border border-slate-300 rounded-lg font-bold text-slate-600 hover:bg-slate-50">Cancel</button>
+                <button type="submit" disabled={creatingSession} className="flex-1 py-3 bg-primary text-white rounded-lg font-bold hover:bg-blue-700 shadow-lg disabled:opacity-60">
+                  {creatingSession ? 'Scheduling...' : 'Schedule'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

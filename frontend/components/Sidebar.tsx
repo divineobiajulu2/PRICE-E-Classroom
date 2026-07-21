@@ -20,7 +20,6 @@ const Sidebar: React.FC<SidebarProps> = ({ role, isMobileOpen, onCloseMobile }) 
     ? [
         { path: '/intern/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/intern/courses', icon: ClipboardList, label: 'My Courses' },
-        { path: '/live-class', icon: Video, label: 'Live Class' },
         { path: '/intern/profile', icon: UserIcon, label: 'My Profile' },
       ]
     : role === UserRole.ADMIN
@@ -32,7 +31,6 @@ const Sidebar: React.FC<SidebarProps> = ({ role, isMobileOpen, onCloseMobile }) 
       : [
           { path: '/instructor/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
           { path: '/instructor/courses', icon: ClipboardList, label: 'My Courses' },
-          { path: '/live-class', icon: Video, label: 'Live Class' },
           { path: '/instructor/profile', icon: UserIcon, label: 'My Profile' },
         ];
 
