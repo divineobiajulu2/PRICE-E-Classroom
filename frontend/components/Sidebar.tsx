@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ClipboardList, LayoutDashboard, LogOut, User as UserIcon, X, FileText } from 'lucide-react';
+import { ClipboardList, LayoutDashboard, LogOut, User as UserIcon, X, FileText, Video } from 'lucide-react';
 import { UserRole } from '../types';
 import { authService } from '../services/api';
 import BrandText from './BrandText';
@@ -20,6 +20,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role, isMobileOpen, onCloseMobile }) 
     ? [
         { path: '/intern/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/intern/courses', icon: ClipboardList, label: 'My Courses' },
+        { path: '/live-class', icon: Video, label: 'Live Class' },
         { path: '/intern/profile', icon: UserIcon, label: 'My Profile' },
       ]
     : role === UserRole.ADMIN
@@ -31,6 +32,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role, isMobileOpen, onCloseMobile }) 
       : [
           { path: '/instructor/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
           { path: '/instructor/courses', icon: ClipboardList, label: 'My Courses' },
+          { path: '/live-class', icon: Video, label: 'Live Class' },
           { path: '/instructor/profile', icon: UserIcon, label: 'My Profile' },
         ];
 
