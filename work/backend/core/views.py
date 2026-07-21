@@ -10,7 +10,7 @@ from django.contrib.auth import authenticate
 import json
 from django.db import transaction
 from django.utils import timezone
-from .models import StudentProfile, Notification, ClassroomMaterial, Assignment, Submission, QuizResponse, QuizQuestion, QuizOption, CourseInstructor, Course, Grade, StudentLessonProgress
+from .models import StudentProfile, Notification, ClassroomMaterial, Assignment, Submission, QuizResponse, QuizQuestion, QuizOption, CourseInstructor, Course, Grade, StudentLessonProgress, LiveSession
 from .serializers import NotificationSerializer, ClassroomMaterialSerializer, AssignmentSerializer, SubmissionSerializer, StudentRegistrationSerializer, CourseSerializer, CourseDetailSerializer, GradeSerializer, StudentLessonProgressSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import api_view, permission_classes
@@ -1682,3 +1682,99 @@ def decline_user(request, user_id):
     username = u.username
     u.delete()
     return Response({'message': 'User declined', 'user': {'id': str(user_id), 'username': username}})
+
+
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def live_sessions(request):
+    user = request.user
+    is_admin = user.is_staff or getattr(user, 'is_superuser', False)
+    is_instructor = getattr(user, 'role', '') in ('teacher', 'instructor')
+
+    if request.method == 'GET':
+        if is_admin:
+            sessions = LiveSession.objects.all()
+        elif is_instructor:
+            sessions = LiveSession.objects.filter(instructor=user)
+        else:
+            enrolled_course_ids = Course.objects.filter(
+                enrollments__student=user
+            ).values_list('id', flat=True) if hasattr(Course, 'enrollments') else \
+            Course.objects.filter(course_instructors__instructor=user).values_list('id', flat=True)
+            sessions = LiveSession.objects.filter(course_id__in=enrolled_course_ids)
+
+        data = [{
+            'id': s.id,
+            'topic': s.topic,
+            'course_id': s.course_id,
+            'course_title': s.course.title,
+            'instructor_name': f"{s.instructor.first_name} {s.instructor.last_name}".strip() or s.instructor.username,
+            'scheduled_date': str(s.scheduled_date),
+            'scheduled_time': str(s.scheduled_time),
+            'status': s.status,
+        } for s in sessions]
+        return Response({'sessions': data})
+
+    if request.method == 'POST':
+        if not is_instructor and not is_admin:
+            return Response({'error': 'Only instructors can schedule sessions.'}, status=403)
+
+        course_id = request.data.get('course')
+        topic = request.data.get('topic')
+        date = request.data.get('date')
+        time = request.data.get('time')
+
+        if not all([course_id, topic, date, time]):
+            return Response({'error': 'course, topic, date, and time are required.'}, status=400)
+
+        try:
+            course = Course.objects.get(id=course_id)
+        except Course.DoesNotExist:
+            return Response({'error': 'Course not found.'}, status=404)
+
+        session = LiveSession.objects.create(
+            course=course,
+            instructor=user,
+            topic=topic,
+            scheduled_date=date,
+            scheduled_time=time,
+        )
+        return Response({
+            'id': session.id,
+            'topic': session.topic,
+            'course_id': session.course_id,
+            'course_title': session.course.title,
+            'instructor_name': f"{user.first_name} {user.last_name}".strip() or user.username,
+            'scheduled_date': str(session.scheduled_date),
+            'scheduled_time': str(session.scheduled_time),
+            'status': session.status,
+        }, status=201)
+
+
+@api_view(['GET', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def live_session_detail(request, session_id):
+    try:
+        session = LiveSession.objects.get(id=session_id)
+    except LiveSession.DoesNotExist:
+        return Response({'error': 'Session not found.'}, status=404)
+
+    if request.method == 'DELETE':
+        is_admin = request.user.is_staff or getattr(request.user, 'is_superuser', False)
+        if not (is_admin or session.instructor_id == request.user.id):
+            return Response({'error': 'You can only delete sessions you created.'}, status=403)
+        session.delete()
+        return Response({'message': 'Session deleted.'})
+
+    return Response({
+        'id': session.id,
+        'topic': session.topic,
+        'course_id': session.course_id,
+        'course_title': session.course.title,
+        'instructor_name': f"{session.instructor.first_name} {session.instructor.last_name}".strip() or session.instructor.username,
+        'scheduled_date': str(session.scheduled_date),
+        'scheduled_time': str(session.scheduled_time),
+        'status': session.status,
+    })

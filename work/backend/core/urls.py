@@ -35,6 +35,8 @@ from .views import (
     my_courses,
     course_instructors,
     course_instructor_detail,
+    live_sessions,
+    live_session_detail,
 )
 
 urlpatterns = [
@@ -78,4 +80,6 @@ urlpatterns = [
     path("courses/available/", available_courses),
     path("intern/my-courses/", my_courses),
     path("courses/my/", my_courses),
+    path("live-sessions/", live_sessions),
+    path("live-sessions/<int:session_id>/", live_session_detail),
 ]

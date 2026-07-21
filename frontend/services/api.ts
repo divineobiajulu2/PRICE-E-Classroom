@@ -539,6 +539,28 @@ export const adminService = {
     return request('/admin/courses/');
   },
 
+  getLiveSessions: async (): Promise<any> => {
+    return request('/live-sessions/');
+  },
+
+  createLiveSession: async (payload: { course: string; topic: string; date: string; time: string }): Promise<any> => {
+    return request('/live-sessions/', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'application/json' },
+    });
+  },
+
+  deleteLiveSession: async (sessionId: string | number): Promise<any> => {
+    return request(`/live-sessions/${sessionId}/`, {
+      method: 'DELETE',
+    });
+  },
+
+  getLiveSession: async (sessionId: string | number): Promise<any> => {
+    return request(`/live-sessions/${sessionId}/`);
+  },
+
   getCourse: async (courseId: string): Promise<any> => {
     return request(`/admin/courses/${courseId}/`);
   },
@@ -652,10 +674,7 @@ export const adminService = {
   
 
   // Live Sessions
-  getLiveSessions: async (): Promise<any[]> => {
-    // TODO: Awaiting Django Backend Implementation: GET /api/admin/live-sessions
-    return unsupportedBackendEndpoint('Admin live session listing');
-  },
+
 
   stopLiveSession: async (sessionId: string): Promise<any> => {
     // TODO: Awaiting Django Backend Implementation: POST /api/admin/live-sessions/:id/stop

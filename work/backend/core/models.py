@@ -556,3 +556,35 @@ class StudentLessonProgress(models.Model):
     def __str__(self):
         return f"{self.student.username} - {self.course.title} - {self.lesson_id}"
 
+
+
+
+class LiveSession(models.Model):
+    STATUS_CHOICES = (
+        ('upcoming', 'Upcoming'),
+        ('live', 'Live'),
+        ('ended', 'Ended'),
+    )
+
+    course = models.ForeignKey(
+        'Course',
+        on_delete=models.CASCADE,
+        related_name='live_sessions'
+    )
+    instructor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        limit_choices_to={'role__in': ['teacher', 'instructor']},
+        related_name='live_sessions'
+    )
+    topic = models.CharField(max_length=255)
+    scheduled_date = models.DateField()
+    scheduled_time = models.TimeField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='upcoming')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-scheduled_date', '-scheduled_time']
+
+    def __str__(self):
+        return f"{self.topic} ({self.course.title})"
